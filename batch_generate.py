@@ -35,71 +35,82 @@ OUTPUT_DIR = pathlib.Path("output")
 POLL_INTERVAL = 30  # seconds between status checks
 
 # ── Prompt Library ───────────────────────────────────────────────────────────
-# Each prompt asks for a FULL-PAGE seamless paper texture / background.
-# No text on the image — pure visual pattern.
+# Professional printable digital paper prompts for Etsy junk journal products.
+# Key rules: edge-to-edge coverage, no torn/ragged paper edges, digital art
+# quality, rich decorative design, portrait orientation implied.
+
+# Common suffix appended to every prompt for consistency
+_SUFFIX = (
+    " The design must fill the entire image edge-to-edge with no visible paper "
+    "borders, no torn edges, no ragged edges, and no white margins. "
+    "Printable digital paper product, high resolution, professional quality. "
+    "Do not include any readable text, letters, words, or watermarks."
+)
 
 PROMPTS = [
-    # ── Vintage & Aged ────────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: aged antique parchment with warm tea-stained tones, subtle foxing spots, slightly crinkled edges, and a faint yellowed patina. No text, no letters, no words.",
+    # ── Shabby Chic Vintage ───────────────────────────────────────────────
+    "Printable digital scrapbook paper design: shabby chic vintage style with layered soft pink and cream roses, delicate lace ribbon borders, faded damask pattern in the background, pearl accents, and a warm antique ivory base. Hand-painted digital illustration style." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: old vintage ledger paper with faded blue and red ruling lines on cream paper, showing authentic aging and light water stains. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: romantic vintage collage with layered watercolor rose bouquets, antique clock faces, ornate golden frames, faded sheet music fragments, and butterfly silhouettes on a warm tea-stained cream background. Rich layered digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: distressed vintage book page texture with yellowed ivory color, coffee-ring stains, soft creases, and worn fibrous texture. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: vintage apothecary aesthetic with illustrated botanical herbs, antique medicine bottles, dried flower specimens, ornate Victorian filigree borders, and aged sepia-toned background with subtle parchment texture. Detailed digital illustration." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: antique love-letter paper with delicate faded rose-tinted edges, soft sepia watercolor washes, and a romantic vintage feel. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: French provincial style with delicate toile de jouy pastoral scenes in dusty blue on antique cream, overlaid with faded rose garlands, vintage postmark motifs, and a soft watercolor wash effect. Elegant hand-painted digital art." + _SUFFIX,
 
-    # ── Floral & Botanical ────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: delicate botanical illustration style with soft watercolor wildflowers — poppies, lavender, daisies — scattered on aged cream paper. No text, no letters, no words.",
+    # ── Dark & Moody Florals ──────────────────────────────────────────────
+    "Printable digital scrapbook paper design: dark moody floral wallpaper with lush deep burgundy garden roses, dark emerald leaves, golden seed pods, and tiny white blooms on a rich charcoal black background. Dutch Golden Age still-life painting style, digitally rendered." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: vintage pressed flower arrangement with dried roses, ferns, and baby's breath on warm parchment, victorian herbarium style. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: gothic romantic style with deep plum and wine-colored peonies, dark trailing ivy, antique gold filigree swirls, and midnight blue watercolor undertones. Dramatic and luxurious hand-painted digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: English cottage garden floral pattern in muted dusty pink, sage green, and antique gold on a soft ivory background. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: mystical enchanted forest with deep teal background, luminous moonlit mushrooms, delicate ferns, fireflies rendered as gold dots, and trailing wisteria vines. Whimsical fairy-tale digital illustration style." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: dark moody floral design with deep burgundy roses, dark foliage, and gold accents on a nearly black background, Dutch masters painting style. No text, no letters, no words.",
+    # ── Cottagecore & Garden ───────────────────────────────────────────────
+    "Printable digital scrapbook paper design: cottagecore aesthetic with a meadow of hand-painted wildflowers — daisies, cornflowers, poppies, and Queen Anne's lace — on a soft sage green watercolor wash background. Fresh and dreamy digital illustration." + _SUFFIX,
 
-    # ── Maps & Travel ─────────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: vintage world map fragment with aged sepia tones, compass roses, dotted travel routes, and antique cartography styling. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: English cottage garden repeating pattern with climbing roses, lavender sprigs, sweet peas, and garden birds in soft muted pink, lilac, sage, and butter yellow on warm cream. Charming watercolor illustration style." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: old travel journal texture with postage-stamp collage elements, faded passport stamps, vintage airmail stripes, and cream paper. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: vintage seed packet collage art with illustrated vegetables, flowers, garden tools, and ornate Victorian typography frames arranged in a decorative repeating layout on warm kraft-colored background. Retro botanical illustration style." + _SUFFIX,
 
-    # ── Music & Art ───────────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: vintage handwritten music sheet on aged ivory paper with faded brown staff lines and musical notes, showing authentic aging and staining. No text, no letters, no words — only musical notation.",
+    # ── Watercolor Washes ─────────────────────────────────────────────────
+    "Printable digital scrapbook paper design: dreamy watercolor marble texture in soft blush pink, rose gold, and ivory white with flowing organic veins and subtle gold foil splatter accents. Elegant abstract modern digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: watercolor artist palette texture with soft blended washes of dusty rose, sage, lavender, and gold on thick textured watercolor paper. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: ocean-inspired watercolor wash with flowing layers of deep teal, cerulean blue, seafoam green, and white foam patterns, accented with tiny gold foil starfish and shells scattered throughout. Artistic hand-painted digital design." + _SUFFIX,
 
-    # ── Lace & Fabric ─────────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: delicate white lace doily pattern overlay on soft blush pink aged paper, with intricate crochet-style lacework details. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: celestial galaxy watercolor with deep indigo, rich purple, and midnight blue swirls, scattered with gold leaf constellation patterns, crescent moons, and twinkling stars. Magical and luxurious digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: vintage burlap and linen fabric texture in natural tan and cream tones, showing woven fiber detail and a rustic handmade feel. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: autumn harvest watercolor with rich layers of burnt sienna, amber gold, deep rust, and warm chocolate brown flowing together, overlaid with delicate gilded leaf silhouettes — maple, oak, and birch. Warm organic digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: french toile de jouy pattern in faded blue ink on antique cream linen, showing pastoral countryside scenes in a repeating pattern. No text, no letters, no words.",
+    # ── Vintage Travel & Ephemera ─────────────────────────────────────────
+    "Printable digital scrapbook paper design: vintage travel ephemera collage with layered antique world map fragments, ornate compass roses, illustrated hot air balloons, old postage stamps, wax seal motifs, and faded route lines on warm sepia-toned background. Rich layered digital collage art." + _SUFFIX,
 
-    # ── Steampunk & Industrial ────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: steampunk style with brass gears, cog wheels, copper rivets, and mechanical sketches on aged brown kraft paper. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: Parisian vintage aesthetic with illustrated Eiffel Tower vignettes, ornate iron scrollwork patterns, French postcard motifs, delicate rose garlands, and vintage perfume bottle sketches on a soft blush-and-gold background. Elegant digital illustration." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: industrial blueprint style with faded white technical drawings of gears and mechanisms on deep prussian blue paper, vintage engineering aesthetic. No text, no letters, no words.",
+    # ── Steampunk & Mechanical ────────────────────────────────────────────
+    "Printable digital scrapbook paper design: steampunk aesthetic with intricately detailed brass clockwork gears, copper mechanical parts, ornate Victorian key illustrations, airship sketches, and industrial riveted metal panel textures on a rich dark brown background. Detailed technical illustration style." + _SUFFIX,
 
-    # ── Watercolor & Abstract ─────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: abstract watercolor wash in ocean tones — soft teal, deep navy, seafoam green — on textured cold-press watercolor paper with natural paint bleeding. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: vintage engineering blueprint aesthetic with detailed mechanical patent drawings, gear schematics, and ornate technical diagrams rendered in cream lines on deep Prussian blue background, with subtle aged paper texture overlay. Technical illustration style." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: galaxy-inspired watercolor with deep indigo, purple, and touches of gold splatter on black paper, creating a magical celestial night sky effect. No text, no letters, no words.",
+    # ── Lace & Textile ────────────────────────────────────────────────────
+    "Printable digital scrapbook paper design: layered antique lace design with intricate Chantilly lace patterns in ivory white overlaid on a soft dusty rose background, with scattered pearl bead accents and satin ribbon bow details. Delicate and feminine digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: autumn harvest watercolor in warm burnt sienna, golden amber, and deep rust tones, with soft blended leaf silhouettes on cream paper. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: vintage patchwork quilt pattern with assorted fabric swatches — tiny florals, gingham checks, polka dots, and calico prints — stitched together with visible cross-stitch borders in warm farmhouse colors. Cozy hand-crafted digital illustration." + _SUFFIX,
 
-    # ── Collage & Ephemera ────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: vintage ephemera collage with layered old tickets, postage stamps, receipts, tags, and labels in sepia and muted rose tones, artfully overlapping on cream paper. No text, no letters, no words.",
+    # ── Victorian & Art Nouveau ───────────────────────────────────────────
+    "Printable digital scrapbook paper design: Art Nouveau style with flowing organic lines, stylized peacock feather motifs, ornate curving borders, and jewel-toned colors — emerald green, sapphire blue, and antique gold — on a rich cream background. Elegant decorative digital art." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: victorian scrapbook style with layered die-cut scraps of cherubs, birds, flowers, and ribbons on aged cream cardstock. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: Victorian Christmas aesthetic with illustrated poinsettias, holly boughs with red berries, golden bells, ornate frames, vintage Santa vignettes, and snowflake accents on a rich forest green background with gold foil details. Festive digital illustration." + _SUFFIX,
 
-    # ── Nature & Organic ──────────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: pressed autumn leaves — maple, oak, and birch — in warm red, orange, and gold on handmade recycled paper with visible fiber inclusions. No text, no letters, no words.",
+    # ── Botanical & Nature ────────────────────────────────────────────────
+    "Printable digital scrapbook paper design: detailed botanical specimen illustration with precisely rendered pressed flowers, ferns, and leaves in the style of a Victorian herbarium plate, with handwritten-style labels (non-readable decorative script), on aged warm ivory background. Scientific illustration style." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: japanese washi paper texture in soft sage green with delicate gold leaf flecks and visible kozo fibers, zen minimalist aesthetic. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: Japanese-inspired washi paper design with delicate cherry blossom branches, koi fish, tiny origami cranes, and gold leaf cloud motifs on a soft sage green watercolor background. Zen minimalist asian-inspired digital art." + _SUFFIX,
 
-    # ── Grunge & Distressed ───────────────────────────────────────────────
-    "A full-page seamless junk journal paper background: heavily distressed grunge texture in dark charcoal and warm brown tones, layered paint peels, scratches, and urban decay aesthetic on thick paper. No text, no letters, no words.",
+    "Printable digital scrapbook paper design: enchanted woodland scene with illustrated acorns, pinecones, fern fronds, tiny woodland mushrooms, and forest berries scattered across a soft mossy green and warm brown watercolor background. Charming nature-inspired digital illustration." + _SUFFIX,
 
-    "A full-page seamless junk journal paper background: vintage newspaper texture with heavily faded and yellowed newsprint, ink bleed, and water damage creating an abstract pattern on fragile paper. No text, no letters, no words.",
+    # ── Grunge & Mixed Media ──────────────────────────────────────────────
+    "Printable digital scrapbook paper design: mixed media art journal style with layered paint textures, stamped geometric patterns, ink splatter, washi tape strips, and torn paper collage elements in a curated palette of mustard yellow, teal, coral, and charcoal. Artistic and textured digital design." + _SUFFIX,
+
+    "Printable digital scrapbook paper design: vintage music and art collage with layered antique sheet music notation, watercolor paint swatches, illustrated musical instruments, ink blots, and ornate border frames on a warm coffee-toned background. Artistic layered digital collage." + _SUFFIX,
 ]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
