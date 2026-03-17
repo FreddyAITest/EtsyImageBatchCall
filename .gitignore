@@ -1,4 +1,6 @@
 output/
+output_a4/
+output_pdf/
 .env
 __pycache__/
 *.pyc

@@ -16,6 +16,7 @@ import sys
 import time
 import base64
 import pathlib
+from io import BytesIO
 
 from dotenv import load_dotenv
 from google import genai
@@ -32,7 +33,14 @@ if not API_KEY:
 MODEL = "gemini-3-pro-image-preview"
 JSONL_FILE = "batch-requests.jsonl"
 OUTPUT_DIR = pathlib.Path("output")
+A4_DIR = pathlib.Path("output_a4")
+PDF_DIR = pathlib.Path("output_pdf")
 POLL_INTERVAL = 30  # seconds between status checks
+
+# DIN A4 at 300 DPI → 2480 × 3508 px (portrait)
+A4_WIDTH = 2480
+A4_HEIGHT = 3508
+A4_DPI = 300
 
 # ── Prompt Library ───────────────────────────────────────────────────────────
 # Professional printable digital paper prompts for Etsy junk journal products.
@@ -125,6 +133,7 @@ def build_jsonl(prompts: list[str], path: str) -> str:
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generation_config": {
                         "responseModalities": ["TEXT", "IMAGE"],
+                        "aspectRatio": "3:4",
                     },
                 },
             }
@@ -236,6 +245,93 @@ def save_images(client: genai.Client, job):
                         print(f"   🖼️  Saved: {out_path}")
 
     print(f"\n🎉  Done! {saved} images saved to {OUTPUT_DIR.resolve()}")
+    return saved
+
+
+def upscale_and_export(source_dir: pathlib.Path):
+    """Upscale all images to DIN A4 (300 DPI) and export as PNGs and combined PDFs (max 20MB)."""
+    from PIL import Image
+
+    A4_DIR.mkdir(exist_ok=True)
+    PDF_DIR.mkdir(exist_ok=True)
+
+    images = sorted(source_dir.glob("junk-journal-*.*"))
+    if not images:
+        print("\n⚠️  No images found to upscale.")
+        return
+
+    print(f"\n📐  Upscaling {len(images)} images to DIN A4 ({A4_WIDTH}×{A4_HEIGHT}px @ {A4_DPI} DPI)...")
+
+    a4_images = []
+    
+    for img_path in images:
+        stem = img_path.stem
+        try:
+            img = Image.open(img_path).convert("RGB")
+            
+            # If the image was generated landscape despite the 3:4 config (fallback)
+            if img.width > img.height:
+                img = img.transpose(Image.ROTATE_90)
+
+            # Resize to A4 portrait
+            img_a4 = img.resize((A4_WIDTH, A4_HEIGHT), Image.LANCZOS)
+
+            # Save high-res PNG
+            png_path = A4_DIR / f"{stem}.png"
+            img_a4.save(png_path, "PNG", dpi=(A4_DPI, A4_DPI))
+            
+            a4_images.append(img_a4)
+            print(f"   ✅  {stem}  →  A4 PNG")
+
+        except Exception as e:
+            print(f"   ⚠️  {stem}: {e}")
+
+    # ── Combine into PDFs (Max ~20MB) ─────────────────────────────────────────
+    print(f"\n📚  Creating combined PDFs (Max 20MB chunks)...")
+    
+    MAX_BYTES = 19.5 * 1024 * 1024  # 19.5 MB
+    current_pdf_images = []
+    pdf_count = 1
+    
+    for i, img in enumerate(a4_images):
+        current_pdf_images.append(img)
+        
+        # Test save to memory buffer to check size
+        buf = BytesIO()
+        current_pdf_images[0].save(
+            buf, "PDF", resolution=A4_DPI, 
+            save_all=True, append_images=current_pdf_images[1:]
+        )
+        size_bytes = buf.tell()
+        
+        # If adding this image pushed it over 20MB (and it's not the only image in the list)
+        if size_bytes > MAX_BYTES and len(current_pdf_images) > 1:
+            # Pop the last image back off
+            overflow_img = current_pdf_images.pop()
+            
+            # Save the current batch
+            pdf_path = PDF_DIR / f"junk-journal-bundle-part{pdf_count:02d}.pdf"
+            current_pdf_images[0].save(
+                pdf_path, "PDF", resolution=A4_DPI, 
+                save_all=True, append_images=current_pdf_images[1:]
+            )
+            print(f"   📄  Saved {pdf_path.name} ({len(current_pdf_images)} pages, {pdf_path.stat().st_size / 1024 / 1024:.1f} MB)")
+            
+            # Start new batch with the overflow image
+            current_pdf_images = [overflow_img]
+            pdf_count += 1
+            
+    # Save any remaining images
+    if current_pdf_images:
+        pdf_path = PDF_DIR / f"junk-journal-bundle-part{pdf_count:02d}.pdf"
+        current_pdf_images[0].save(
+            pdf_path, "PDF", resolution=A4_DPI, 
+            save_all=True, append_images=current_pdf_images[1:]
+        )
+        print(f"   📄  Saved {pdf_path.name} ({len(current_pdf_images)} pages, {pdf_path.stat().st_size / 1024 / 1024:.1f} MB)")
+
+    print(f"\n✅  A4 PNGs saved to: {A4_DIR.resolve()}")
+    print(f"✅  Combined PDFs saved to: {PDF_DIR.resolve()}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -261,7 +357,9 @@ def main():
 
     # 5. Handle result
     if job.state.name == "JOB_STATE_SUCCEEDED":
-        save_images(client, job)
+        saved = save_images(client, job)
+        if saved > 0:
+            upscale_and_export(OUTPUT_DIR)
     else:
         print(f"\n❌  Job ended with state: {job.state.name}")
         if hasattr(job, "error") and job.error:
